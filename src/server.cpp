@@ -6,7 +6,7 @@
 #include <cstring>
 #include <iostream>
 
-#define PORT 8080
+#define PORT 8000
 const size_t k_max_msg = 4896;
 
 
@@ -60,7 +60,7 @@ static int32_t one_request(int connfd) {
     }
 //    printf("read successful\n");
     //do something
-    printf("client says %.*s\n", rbuf[4]);
+    printf("client says %.*s\n", len, rbuf[4]);
 
     const char reply[] = "world\n";
     char wbuf[4+sizeof(reply)];
