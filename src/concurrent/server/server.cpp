@@ -120,7 +120,6 @@ static void handle_read(Conn* conn) {
     // process the parsed message
     // remove the message from Conn:incoming       
     try_one_request(conn);
-        
     
     if(conn->outgoing.size()>0) {
         conn->want_write = true;
@@ -171,7 +170,7 @@ int main()
         poll_args.push_back(pfd);
 
         for(Conn* conn: fd2conn) {
-            if(!conn) {
+            if(!conn || conn==NULL) {
                 continue;
             }
 
@@ -199,8 +198,8 @@ int main()
             if(Conn* conn = handle_accept(server_fd)) {
                 if(fd2conn.size() <= (size_t)conn->fd) {
                     fd2conn.resize(conn->fd+1);
-                    fd2conn[conn->fd] = conn;
                 }
+                fd2conn[conn->fd] = conn;
             }
         }
 
@@ -208,11 +207,11 @@ int main()
             uint32_t ready = poll_args[i].revents;
             Conn* conn = fd2conn[poll_args[i].fd];
             if(ready & POLLIN) {
-               // printf("read available\n");
+                printf("read available\n");
                 handle_read(conn);      //application logic
             }
             if(ready & POLLOUT) {
-               // printf("write available\n");
+                printf("write available\n");
                 handle_write(conn);    //application logic
             }
             if(ready & POLLERR || conn->want_close) {

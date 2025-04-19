@@ -20,8 +20,7 @@ static int32_t read_full(int fd, char* buff, size_t n) {
         if(rv<=0) {
             return -1;
         }  
-        printf("read of length successful\n");
-        
+       
         //assert((size_t)rv <= n);
         n -= (size_t)rv;
         buff += n;
