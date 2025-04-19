@@ -35,9 +35,10 @@ static void buff_consume(vector<uint8_t>&buf, size_t n) {
 }
 
 static void handle_write(Conn *conn) {
-    assert(conn->outgoing.size()>0);
+    //assert(conn->outgoing.size()>0);
     ssize_t rv = write(conn->fd, conn->outgoing.data(), conn->outgoing.size());
     if(rv < 0 && errno == EAGAIN) {
+        printf("write failed\n");
         return;
     }
 
@@ -56,7 +57,7 @@ static void handle_write(Conn *conn) {
 
 static bool try_one_request(Conn* conn) {
     if(conn->incoming.size()<4)
-    return 4;
+    return false;
 
     uint32_t len = 0;
     memcpy(&len, conn->incoming.data(), 4);
@@ -81,7 +82,6 @@ static bool try_one_request(Conn* conn) {
     buff_consume(conn->incoming, 4+len);
 
     return true;
-
 }
 
 static void fd_set_nb(int fd) {
@@ -118,8 +118,12 @@ static void handle_read(Conn* conn) {
     buff_append(conn->incoming, buf, (size_t)rv);
     // try to parse the accumulated buffer
     // process the parsed message
-    // remove the message from Conn:incoming       
-    try_one_request(conn);
+    // remove the message from Conn:incoming  
+
+    // handle multiple requests
+    while(try_one_request(conn)) {
+        // ...
+    }
     
     if(conn->outgoing.size()>0) {
         conn->want_write = true;

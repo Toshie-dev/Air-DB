@@ -60,27 +60,27 @@ static int32_t query(int fd, char* text)
     printf("write successful\n");
 
     //4 bytes header
-    char rbuf[4+k_max_msg];
-    errno = 0;
-    int32_t err = read_full(fd, rbuf, 4);
-    if(err) {
-        printf("error occured in reading message\n");
-        return err;
-    }
+   // char rbuf[4+k_max_msg];
+   // errno = 0;
+   // int32_t err = read_full(fd, rbuf, 4);
+   // if(err) {
+   //     printf("error occured in reading message\n");
+   //     return err;
+   // }
 
-    memcpy(&len, rbuf, 4);      //len of read data
-    if(len>k_max_msg) {
-        return -1;
-    }
-    err = read_full(fd, &rbuf[4], len);
-    if(err) {
-        printf("error in reading message content\n");
-        return err;
-    }
-    printf("read successful\n");   
+   // memcpy(&len, rbuf, 4);      //len of read data
+   // if(len>k_max_msg) {
+   //     return -1;
+   // }
+   // err = read_full(fd, &rbuf[4], len);
+   // if(err) {
+   //     printf("error in reading message content\n");
+   //     return err;
+   // }
+   // printf("read successful\n");   
 
-    //do something
-    printf("server says: %.*s\n", len, &rbuf[4]);
+   // //do something
+   // printf("server says: %.*s\n", len, &rbuf[4]);
     return 0;
 }
 
@@ -116,6 +116,22 @@ static int32_t query(int fd, char* text)
 //
 //}
 
+int32_t read_res(int fd) {
+    char rbuf[4+k_max_msg];
+    char* rbp = rbuf;
+    int32_t err = 1;
+    while(err) {
+        uint32_t len = 0;
+        err = read_full(fd, rbp, 4);
+        memcpy(&len, rbp, 4);
+        err = read_full(fd, rbp+4, len);
+        printf("server says : %.*s\n", len, rbp+4);
+        rbp += 4 + len;
+    }
+    return 0;
+}
+
+
 int main() {
     int sock = 0;
     struct sockaddr_in serv_addr;
@@ -143,23 +159,23 @@ int main() {
     }
   
     vector<string> query_list = {
-        "hello1", "hello2", "hello3"
-    };
+        "hello1", "hello2", "hello3", "hello4" };
 
-   // for(const string &s: query_list) {
-   //     int32_t err = query(fd, s.data());
-   //     if(err) printf("error sending request\n");
-   // }
+    for(const string &s: query_list) {
+        int32_t err = query(sock, (char*)s.data());
+        if(err) printf("error sending request\n");
+    }
 
-   // for(size_t i=0; i<query_list.size(); ++i) {
-   //     int32_t err = read_res(fd);
-   //     if(err) printf("error occured reading requests\n");
-   // }
+    for(size_t i=0; i<query_list.size(); i++) {
+        printf("reading\n");
+        int32_t err = read_res(sock);
+        if(err) printf("error occured reading requests\n");
+    }
 
-    int32_t err = query(sock, (char*)"hello1");
-    printf("first request sent\n");
+    //int32_t err = query(sock, (char*)"hello1");
+    //printf("first request sent\n");
    
-    err = query(sock, (char*)"hello2");
+    //err = query(sock, (char*)"hello2");
   
     close(sock);
     return 0;
